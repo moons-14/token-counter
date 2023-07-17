@@ -124,3 +124,26 @@ console.log(tokenCounter.receipt);
 #### Supported Currency Properties
 
 - tokenCounter.jpyPrice
+
+## Contributing
+
+1.  Fork it!
+2.  Create your feature branch: `git checkout -b my-new-feature`
+3.  Add your changes: `git add .`
+4.  Commit your changes: `git commit -am 'Add some feature'`
+5.  Push to the branch: `git push origin my-new-feature`
+6.  Submit a pull request 😎
+
+## Contact us
+
+- Twitter:[moons_dev](https://twitter.com/moons_dev)
+
+- Discord:moons14
+
+## Authors
+
+**moons14** - [moons-14](https://github.com/moons-14)
+
+## License
+
+[MIT License](https://andreasonny.mit-license.org/2022) © 2023 moons14
