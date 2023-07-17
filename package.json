@@ -7,7 +7,8 @@
   "typings": "dist/src/index.d.ts",
   "type": "module",
   "exports": {
-    ".": "./dist/index.js"
+    ".": "./dist/index.js",
+    "./langchain": "./dist/langchain/callback.js"
   },
   "repository": "https://github.com/moons-14/token-counter.git",
   "author": "moons14 <moons@moons14.com>",
