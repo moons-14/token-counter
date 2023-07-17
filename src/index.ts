@@ -1,4 +1,4 @@
-import BigNumber from "bignumber.js";
+import { BigNumber } from "bignumber.js";
 import tiktoken from "tiktoken-node";
 
 const cl100kEnc = tiktoken.getEncoding("cl100k_base")
@@ -23,32 +23,36 @@ export class TokenCounter {
     private _useGpt3Mock: boolean = false;
     private _useAdaMock: boolean = false;
 
-    constructor(useReceipt: boolean = false,
+    constructor(
+        useReceipt: boolean = false,
         onChange?: (token: number, price: string, jpyPrice: string) => void,
         {
             useGpt4Mock = false,
             useGpt3Mock = false,
             useAdaMock = false,
-            price
-        }: {
-            useGpt4Mock?: boolean,
-            useGpt3Mock?: boolean,
-            useAdaMock?: boolean,
-            price?: {
-                gpt_3_4k_input?: BigNumber | number,
-                gpt_3_4k_output?: BigNumber | number,
-                gpt_3_16k_input?: BigNumber | number,
-                gpt_3_16k_output?: BigNumber | number,
-                gpt_4_8k_input?: BigNumber | number,
-                gpt_4_8k_output?: BigNumber | number,
-                gpt_4_32k_input?: BigNumber | number,
-                gpt_4_32k_output?: BigNumber | number,
-                ada_2_embedding?: BigNumber | number,
-            },
-            rate?: {
-                jpy: number
-            }
-        } = {}) {
+            price = {},
+            rate = {}
+        }
+            :
+            {
+                useGpt4Mock?: boolean,
+                useGpt3Mock?: boolean,
+                useAdaMock?: boolean,
+                price?: {
+                    gpt_3_4k_input?: BigNumber | number,
+                    gpt_3_4k_output?: BigNumber | number,
+                    gpt_3_16k_input?: BigNumber | number,
+                    gpt_3_16k_output?: BigNumber | number,
+                    gpt_4_8k_input?: BigNumber | number,
+                    gpt_4_8k_output?: BigNumber | number,
+                    gpt_4_32k_input?: BigNumber | number,
+                    gpt_4_32k_output?: BigNumber | number,
+                    ada_2_embedding?: BigNumber | number,
+                },
+                rate?: {
+                    jpy?: BigNumber | number
+                }
+            } = {}) {
         this._useReceipt = useReceipt;
         this._onChange = onChange || (() => void 0);
         this._useGpt4Mock = useGpt4Mock;
@@ -62,7 +66,7 @@ export class TokenCounter {
         this._gpt4_8k_outputPricePerToken = typeof price?.gpt_4_8k_output == "undefined" ? this._gpt4_8k_outputPricePerToken : typeof price.gpt_4_8k_output == "number" ? BigNumber(price.gpt_4_8k_output) : price.gpt_4_8k_output;
         this._gpt4_32k_inputPricePerToken = typeof price?.gpt_4_32k_input == "undefined" ? this._gpt4_32k_inputPricePerToken : typeof price.gpt_4_32k_input == "number" ? BigNumber(price.gpt_4_32k_input) : price.gpt_4_32k_input;
         this._gpt4_32k_outputPricePerToken = typeof price?.gpt_4_32k_output == "undefined" ? this._gpt4_32k_outputPricePerToken : typeof price.gpt_4_32k_output == "number" ? BigNumber(price.gpt_4_32k_output) : price.gpt_4_32k_output;
-        this.jpyPrice = rate?.jpy || this.jpyPrice;
+        this._usdJpy = typeof rate?.jpy == "undefined" ? this._usdJpy : typeof rate.jpy == "number" ? BigNumber(rate.jpy) : rate.jpy;
     }
 
     public addGpt3_4kInputText(text: string) {
@@ -160,6 +164,98 @@ export class TokenCounter {
         this.price = new BigNumber(tokenCount).multipliedBy(this._ada_v2PricePerToken).plus(this.price);
         if (this._useReceipt) {
             this.receipt.push({ model: "ada-v2", io: "input", text: text, tokenCount: tokenCount, price: new BigNumber(tokenCount).multipliedBy(this._ada_v2PricePerToken) });
+        }
+        this._onChange(this.tokens, this.price.toString(), this.jpyPrice)
+    }
+
+    //トークンのカウント
+
+    public addGpt3_4kInputTokenCount(tokenCount: number) {
+        if (this._useGpt3Mock) return void 0;
+        this.tokens += tokenCount;
+        this.price = new BigNumber(tokenCount).multipliedBy(this._gpt3_4k_inputPricePerToken).plus(this.price);
+        if (this._useReceipt) {
+            this.receipt.push({ model: "gpt-3.5-4k", io: "input", text: "", tokenCount: tokenCount, price: new BigNumber(tokenCount).multipliedBy(this._gpt3_4k_inputPricePerToken) });
+        }
+        this._onChange(this.tokens, this.price.toString(), this.jpyPrice)
+    }
+
+    public addGpt3_4kOutputTokenCount(tokenCount: number) {
+        if (this._useGpt3Mock) return void 0;
+        this.tokens += tokenCount;
+        this.price = new BigNumber(tokenCount).multipliedBy(this._gpt3_4k_outputPricePerToken).plus(this.price);
+        if (this._useReceipt) {
+            this.receipt.push({ model: "gpt-3.5-4k", io: "output", text: "", tokenCount: tokenCount, price: new BigNumber(tokenCount).multipliedBy(this._gpt3_4k_outputPricePerToken) });
+        }
+        this._onChange(this.tokens, this.price.toString(), this.jpyPrice)
+    }
+
+    public addGpt3_16kInputTokenCount(tokenCount: number) {
+        if (this._useGpt3Mock) return void 0;
+        this.tokens += tokenCount;
+        this.price = new BigNumber(tokenCount).multipliedBy(this._gpt3_16k_inputPricePerToken).plus(this.price);
+        if (this._useReceipt) {
+            this.receipt.push({ model: "gpt-3.5-16k", io: "input", text: "", tokenCount: tokenCount, price: new BigNumber(tokenCount).multipliedBy(this._gpt3_16k_inputPricePerToken) });
+        }
+        this._onChange(this.tokens, this.price.toString(), this.jpyPrice)
+    }
+
+    public addGpt3_16kOutputTokenCount(tokenCount: number) {
+        if (this._useGpt3Mock) return void 0;
+        this.tokens += tokenCount;
+        this.price = new BigNumber(tokenCount).multipliedBy(this._gpt3_16k_outputPricePerToken).plus(this.price);
+        if (this._useReceipt) {
+            this.receipt.push({ model: "gpt-3.5-16k", io: "output", text: "", tokenCount: tokenCount, price: new BigNumber(tokenCount).multipliedBy(this._gpt3_16k_outputPricePerToken) });
+        }
+        this._onChange(this.tokens, this.price.toString(), this.jpyPrice)
+    }
+
+    public addGpt4_8kInputTokenCount(tokenCount: number) {
+        if (this._useGpt4Mock) return void 0;
+        this.tokens += tokenCount;
+        this.price = new BigNumber(tokenCount).multipliedBy(this._gpt4_8k_inputPricePerToken).plus(this.price);
+        if (this._useReceipt) {
+            this.receipt.push({ model: "gpt-4-8k", io: "input", text: "", tokenCount: tokenCount, price: new BigNumber(tokenCount).multipliedBy(this._gpt4_8k_inputPricePerToken) });
+        }
+        this._onChange(this.tokens, this.price.toString(), this.jpyPrice)
+    }
+
+    public addGpt4_8kOutputTokenCount(tokenCount: number) {
+        if (this._useGpt4Mock) return void 0;
+        this.tokens += tokenCount;
+        this.price = new BigNumber(tokenCount).multipliedBy(this._gpt4_8k_outputPricePerToken).plus(this.price);
+        if (this._useReceipt) {
+            this.receipt.push({ model: "gpt-4-8k", io: "output", text: "", tokenCount: tokenCount, price: new BigNumber(tokenCount).multipliedBy(this._gpt4_8k_outputPricePerToken) });
+        }
+        this._onChange(this.tokens, this.price.toString(), this.jpyPrice)
+    }
+
+    public addGpt4_32kInputTokenCount(tokenCount: number) {
+        if (this._useGpt4Mock) return void 0;
+        this.tokens += tokenCount;
+        this.price = new BigNumber(tokenCount).multipliedBy(this._gpt4_32k_inputPricePerToken).plus(this.price);
+        if (this._useReceipt) {
+            this.receipt.push({ model: "gpt-4-32k", io: "input", text: "", tokenCount: tokenCount, price: new BigNumber(tokenCount).multipliedBy(this._gpt4_32k_inputPricePerToken) });
+        }
+        this._onChange(this.tokens, this.price.toString(), this.jpyPrice)
+    }
+
+    public addGpt4_32kOutputTokenCount(tokenCount: number) {
+        if (this._useGpt4Mock) return void 0;
+        this.tokens += tokenCount;
+        this.price = new BigNumber(tokenCount).multipliedBy(this._gpt4_32k_outputPricePerToken).plus(this.price);
+        if (this._useReceipt) {
+            this.receipt.push({ model: "gpt-4-32k", io: "output", text: "", tokenCount: tokenCount, price: new BigNumber(tokenCount).multipliedBy(this._gpt4_32k_outputPricePerToken) });
+        }
+        this._onChange(this.tokens, this.price.toString(), this.jpyPrice)
+    }
+
+    public addAda_v2TokenCount(tokenCount: number) {
+        if (this._useAdaMock) return void 0;
+        this.tokens += tokenCount;
+        this.price = new BigNumber(tokenCount).multipliedBy(this._ada_v2PricePerToken).plus(this.price);
+        if (this._useReceipt) {
+            this.receipt.push({ model: "ada-v2", io: "input", text: "", tokenCount: tokenCount, price: new BigNumber(tokenCount).multipliedBy(this._ada_v2PricePerToken) });
         }
         this._onChange(this.tokens, this.price.toString(), this.jpyPrice)
     }
