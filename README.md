@@ -100,6 +100,13 @@ console.log(tokenCounter.receipt);
 - addGpt4_32kOutputTokenCount
 - addAda_v2TokenCount
 
+#### LangChain Callback
+
+- TokenCounter3_4kCallback
+- TokenCounter3_16kCallback
+- TokenCounter4_8kCallback
+- TokenCounter4_32kCallback
+
 ## Available Properties
 
 #### Get number of tokens
